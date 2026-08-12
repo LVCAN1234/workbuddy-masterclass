@@ -1,0 +1,42 @@
+{
+  "version": "0.1",
+  "purpose": "教 Agent/WorkBuddy 课程的领域知识权威底稿，供生成课程与口播素材时检索调用",
+  "files": {
+    "glossary": "references/kb/glossary.md",
+    "product_facts": "references/kb/product_facts.md",
+    "cases": "references/kb/cases.md"
+  },
+  "by_topic": {
+    "agent": ["glossary"],
+    "chatbot": ["glossary"],
+    "llm": ["glossary"],
+    "token": ["glossary"],
+    "context_window": ["glossary"],
+    "temperature": ["glossary"],
+    "hallucination": ["glossary"],
+    "function_calling": ["glossary"],
+    "tools": ["glossary"],
+    "react": ["glossary"],
+    "memory": ["glossary"],
+    "system_prompt": ["glossary"],
+    "skill": ["glossary", "product_facts"],
+    "mcp": ["glossary", "product_facts"],
+    "automation": ["glossary", "product_facts"],
+    "expert": ["glossary"],
+    "work_mode": ["glossary", "product_facts"],
+    "interface": ["product_facts"],
+    "models": ["product_facts"],
+    "task_space": ["product_facts"],
+    "limits": ["product_facts"],
+    "course_video": ["cases"],
+    "geo": ["cases"],
+    "cross_domain": ["cases"],
+    "build_vs_general": ["cases"]
+  },
+  "enrich_sources": [
+    "WebFetch https://www.codebuddy.cn/docs/workbuddy/Overview 等官方文档",
+    "对话实战沉淀（课程视频流水线坑、对齐B标准等）",
+    "用户真实案例（GEO诊断报告、养生/健身课迁移）",
+    "每节课生成后验证回写"
+  ]
+}

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniTask Agent — 你的第一个Agent</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  background: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+.container {
+  width: 560px;
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.header {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff;
+  padding: 16px 20px;
+  text-align: center;
+}
+.header h1 { font-size: 20px; font-weight: 600; }
+.header p { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+.chat-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: #fafbfc;
+  min-height: 300px;
+  max-height: 400px;
+}
+.msg {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+}
+.msg.user { align-items: flex-end; }
+.msg.agent { align-items: flex-start; }
+.msg .label {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 3px;
+}
+.msg .bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-all;
+}
+.msg.user .bubble {
+  background: #667eea;
+  color: #fff;
+  border-bottom-right-radius: 3px;
+}
+.msg.agent .bubble {
+  background: #e8ecf1;
+  color: #333;
+  border-bottom-left-radius: 3px;
+  white-space: pre-wrap;
+}
+.input-area {
+  display: flex;
+  padding: 12px 16px;
+  border-top: 1px solid #e8e8e8;
+  background: #fff;
+  gap: 8px;
+}
+.input-area input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-area input:focus { border-color: #667eea; }
+.input-area button {
+  padding: 10px 18px;
+  background: #667eea;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.input-area button:hover { background: #5a6fd6; }
+.hints {
+  padding: 6px 16px 12px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.hint {
+  font-size: 11px;
+  background: #f0f2f5;
+  color: #666;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+}
+.hint:hover { background: #667eea; color: #fff; border-color: #667eea; }
+.system-msg {
+  text-align: center;
+  font-size: 11px;
+  color: #aaa;
+  margin: 8px 0;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🔧 MiniTask Agent</h1>
+    <p>你的第一个 Agent | 四件套：大脑 · 工具 · 记忆 · 规划</p>
+  </div>
+  <div class="chat-area" id="chat"></div>
+  <div class="hints" id="hints">
+    <span class="hint" onclick="sendHint(this.textContent)">帮我记一个待办：买牛奶</span>
+    <span class="hint" onclick="sendHint(this.textContent)">列出所有待办</span>
+    <span class="hint" onclick="sendHint(this.textContent)">帮我算 (25+17)*3</span>
+    <span class="hint" onclick="sendHint(this.textContent)">现在几点</span>
+  </div>
+  <div class="input-area">
+    <input id="userInput" placeholder="输入指令，回车发送..." onkeydown="if(event.key==='Enter')send()">
+    <button onclick="send()">发送</button>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// 记忆系统（long-term memory — localStorage）
+// ============================================================
+const TASKS_KEY = 'minitask_agent_tasks';
+
+function loadTasks() {
+  try { return JSON.parse(localStorage.getItem(TASKS_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveTasks(tasks) {
+  localStorage.setItem(TASKS_KEY, JSON.stringify(tasks));
+}
+
+// ============================================================
+// 工具函数
+// ============================================================
+
+function toolAddTask(taskName) {
+  const tasks = loadTasks();
+  const task = {
+    id: tasks.length + 1,
+    name: taskName,
+    createdAt: new Date().toLocaleString('zh-CN'),
+    done: false
+  };
+  tasks.push(task);
+  saveTasks(tasks);
+  return `已添加待办 #${task.id}: ${taskName}`;
+}
+
+function toolListTasks() {
+  const tasks = loadTasks();
+  if (tasks.length === 0) return '当前没有待办事项。';
+  return tasks.map(t =>
+    `  #${t.id} [${t.done ? '完成' : '待办'}] ${t.name}  (${t.createdAt})`
+  ).join('\n');
+}
+
+function toolCalculate(rawText) {
+  // 步骤1：跳过中文前缀，定位到数学表达式的起始位置
+  // 匹配从第一个 数字/英文括号/中文括号 开始的部分
+  const mathMatch = rawText.match(/[\(（\d][\d\s+\-*/%().（）^]*/);
+  if (!mathMatch) return '错误：没有找到可计算的数学表达式，请直接输入算式如 23*47';
+
+  let expr = mathMatch[0]
+    .replace(/（/g, '(')   // 中文左括号 → 英文
+    .replace(/）/g, ')')   // 中文右括号 → 英文
+    .replace(/\^/g, '**')  // ^ 幂运算 → **
+    .trim();
+
+  // 步骤2：安全检查（只允许数字和基础数学符号）
+  const allowed = new Set('0123456789+-*/().% ');
+  for (let c of expr) {
+    if (!allowed.has(c)) return `错误：表达式包含不支持的字符 '${c}'`;
+  }
+
+  // 步骤3：计算
+  try {
+    const result = eval(expr);
+    return `计算结果: ${mathMatch[0].trim()} = ${result}`;
+  } catch(e) {
+    return `计算失败: ${e.message}`;
+  }
+}
+
+function toolGetTime() {
+  const now = new Date();
+  const weekDays = ['日','一','二','三','四','五','六'];
+  return `当前时间: ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ` +
+         `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')} ` +
+         `星期${weekDays[now.getDay()]}`;
+}
+
+// ============================================================
+// 工具注册表
+// ============================================================
+const TOOLS = [
+  {
+    name: 'add_task',
+    keywords: ['提醒', '记一下', '备忘', '帮我记', '加上', '加一个', '新增', '创建任务'],
+    run: (text) => toolAddTask(extractTaskName(text))
+  },
+  {
+    name: 'list_tasks',
+    keywords: ['列出', '查看', '有哪些', '显示', '看看', '都有什么', '清单', '列表', '待办', '任务'],
+    run: () => toolListTasks()
+  },
+  {
+    name: 'calculate',
+    keywords: ['算', '计算', '等于', '多少', '+', '-', '*', '/'],
+    run: (text) => toolCalculate(text)
+  },
+  {
+    name: 'get_time',
+    keywords: ['时间', '日期', '几点', '今天几号', '现在几点', '星期几'],
+    run: () => toolGetTime()
+  }
+];
+
+function extractTaskName(text) {
+  const match = text.match(/[:：]\s*(.+)/);
+  if (match) return match[1].trim();
+  return text;
+}
+
+// ============================================================
+// 模拟大脑 — agent_brain
+// ============================================================
+function agentBrain(userInput) {
+  const lower = userInput.toLowerCase();
+  let bestTool = null;
+  let bestScore = 0;
+
+  for (const tool of TOOLS) {
+    let score = 0;
+    for (const kw of tool.keywords) {
+      if (lower.includes(kw.toLowerCase())) score++;
+    }
+    // list_tasks 加分：列出+待办组合
+    if (tool.name === 'list_tasks') {
+      if ((lower.includes('列出') || lower.includes('查看')) && lower.includes('待办')) score += 2;
+    }
+    // calculate 加分：检测到运算符
+    if (tool.name === 'calculate') {
+      const ops = (userInput.match(/[\+\-\*\/]/g) || []).length;
+      score += ops;
+    }
+    if (score > bestScore) {
+      bestScore = score;
+      bestTool = tool;
+    }
+  }
+
+  if (bestTool) {
+    return bestTool.run(userInput);
+  }
+
+  // 没匹配到工具 → LLM 自己回答
+  const greetings = ['你好', '嗨', 'hello', 'hi', '早上好', '下午好', '晚上好'];
+  if (greetings.some(g => lower.includes(g))) {
+    return '你好！我是你的 MiniTask Agent。我可以帮你记录待办、计算数学题、查看任务列表、查询时间。试试点击上面的快捷指令？';
+  }
+  return `我不太理解"${userInput}"的意思。你可以试试：\n  • 帮我记一个待办：XXX\n  • 列出所有待办\n  • 帮我算 23*47\n  • 现在几点`;
+}
+
+// ============================================================
+// 聊天界面
+// ============================================================
+const chatDiv = document.getElementById('chat');
+const inputEl = document.getElementById('userInput');
+
+function addMsg(role, text) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `<span class="label">${role === 'user' ? '你' : 'Agent'}</span><div class="bubble">${escapeHtml(text)}</div>`;
+  chatDiv.appendChild(div);
+  chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function addSystem(text) {
+  const div = document.createElement('div');
+  div.className = 'system-msg';
+  div.textContent = text;
+  chatDiv.appendChild(div);
+  chatDiv.scrollTop = chatDiv.scrollHeight;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function send() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = '';
+  addMsg('user', text);
+
+  if (text === '退出' || text === 'quit') {
+    addMsg('agent', '再见！待办事项已自动保存。');
+    return;
+  }
+
+  const response = agentBrain(text);
+  addMsg('agent', response);
+}
+
+function sendHint(text) {
+  inputEl.value = text;
+  send();
+}
+
+// ============================================================
+// 启动 — 注入长期记忆
+// ============================================================
+(function init() {
+  const tasks = loadTasks();
+  if (tasks.length > 0) {
+    addSystem(`[记忆] 上次有 ${tasks.length} 个待办事项，已自动加载。`);
+  }
+  addSystem('试试点击上面的快捷指令，或者自己输入命令 👆');
+  inputEl.focus();
+})();
+</script>
+</body>
+</html>
