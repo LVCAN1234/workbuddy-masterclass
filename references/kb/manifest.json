@@ -31,7 +31,10 @@
     "course_video": ["cases"],
     "geo": ["cases"],
     "cross_domain": ["cases"],
-    "build_vs_general": ["cases"]
+    "build_vs_general": ["cases"],
+    "deploy_web": ["cases"],
+    "web_hosting": ["cases"],
+    "aliyun_ecs": ["cases"]
   },
   "enrich_sources": [
     "WebFetch https://www.codebuddy.cn/docs/workbuddy/Overview 等官方文档",

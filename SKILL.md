@@ -1,9 +1,9 @@
 ---
 name: workbuddy-masterclass
 description: |
-  WorkBuddy 从零到精通：19 节核心课 + 2 个补充板块（领域知识库 / 实战工作台）系统掌握 AI Agent。面向零基础用户（AI小白），通过"理论讲解 + 图解 + 互动验收"的方式教学。涵盖 Agent 原理、LLM工作机制、Function Calling、记忆系统、Skill开发、MCP连接器、自动化任务、竞品对比、MCP实操、工作日报实战、创作者路径等全部核心能力。
+  WorkBuddy 从零到精通：19 节核心课 + 3 个补充板块（领域知识库 / 实战工作台 / 建站上云实战）系统掌握 AI Agent。面向零基础用户（AI小白），通过"理论讲解 + 图解 + 互动验收"的方式教学。涵盖 Agent 原理、LLM工作机制、Function Calling、记忆系统、Skill开发、MCP连接器、自动化任务、竞品对比、MCP实操、工作日报实战、创作者路径等全部核心能力。
   触发场景：用户表示想学 Agent、想了解 WorkBuddy、问"什么是 Agent"、"教我用 WorkBuddy"、"Agent 入门"、"WorkBuddy 能做什么"、"AI Agent 课程"等。
-  课程共 19 节核心课 + 2 个补充板块：第0课WorkBuddy界面导览 + 基础课（1-8节）+ 进阶课（9-18节）+ 补充板块（19 领域知识库、20 实战工作台），包含实战项目（搭建 MiniTask Agent）、MCP 实操、自动日报实战、GEO 工作台演示和创作者路线。
+  课程共 19 节核心课 + 3 个补充板块：第0课WorkBuddy界面导览 + 基础课（1-8节）+ 进阶课（9-18节）+ 补充板块（19 领域知识库、20 实战工作台、21 建站上云实战），包含实战项目（搭建 MiniTask Agent）、MCP 实操、自动日报实战、GEO 工作台演示和创作者路线。
 author: 灿哥（老板）
 category: education
 version: 1.0.0
@@ -67,12 +67,13 @@ agent_created: true
 | 17 | Agent 实战：自动日报 | 飞书日程+消息 → LLM提炼 → 日报模板 → 飞书群 |
 | 18 | 从学员到创作者 | 三条路：造Skill/分享ClawHub/等Expert市场，含真实案例 |
 
-### 补充板块（19-20 节）：知识库 + 工作台
+### 补充板块（19-21 节）：知识库 + 工作台 + 建站实战
 
 | 课号 | 主题 | 核心内容 |
 |------|------|----------|
 | 19 | 领域知识库板块（L3） | 为什么 Agent 会编、知识库三件套（glossary/product_facts/cases）、manifest 检索调用、回写闭环越用越厚 |
 | 20 | 实战工作台板块 | 工作台四要素、以谋仕GEO 诊断台为案例、五步搭建法、与 Skill/Expert 组合 |
+| 21 | 建站上云实战 | 四步全链路（出网站→租服务器→部署上线→日常维护）、以谋仕AI官网为真实案例、串起 Agent/四件套/Function Calling/知识库回写 |
 
 ## Teaching Workflow
 
@@ -81,7 +82,7 @@ agent_created: true
 当用户触发本 Skill 时，按以下步骤启动：
 
 1. **了解用户水平**：询问"你对 AI Agent 了解多少？用过哪些 AI 工具？"
-2. **设定预期**：告知课程 19 节核心课 + 2 个补充板块（含第 0 课界面导览）、分基础和进阶两个阶段，外加知识库 / 工作台两个补充板块
+2. **设定预期**：告知课程 19 节核心课 + 3 个补充板块（含第 0 课界面导览）、分基础和进阶两个阶段，外加知识库 / 工作台 / 建站实战三个补充板块
 3. **从第 0 课开始**，按顺序教学，不跳课
 
 ### Phase 2: Teaching Each Lesson
@@ -177,6 +178,15 @@ assets/geo-workbench.html
 
 教学时应：点「加载示例」演示诊断出分，再对照第 20 课讲工作台四要素与五步搭建法。
 
+### 演示素材：谋仕AI 官网（第 21 课真实案例）
+
+第 21 课用学员真实上线的企业官网（geomoushi.com）作为「建站 + 上云 + 绑域名」全链路的贯穿案例，无需额外素材文件。
+
+- 网站是纯静态站（HTML + CSS + JS + 图片），由 WorkBuddy 生成并部署到阿里云 ECS（Nginx）
+- 教学时可直接打开 geomoushi.com 给学员看「成品长什么样」
+- 后台 admin.html 可现场演示「加新闻」维护路径
+- 部署踩坑（安全组放行 80、SSH 密钥路径、Nginx 配置冲突）已沉淀在 `references/kb/cases.md` 案例 5
+
 ## Post-Course Options
 
 全部 19 节课完成后，向学员提供以下选项：
@@ -189,7 +199,7 @@ assets/geo-workbench.html
 
 ## Resources
 
-- `references/curriculum.md` — 19 节核心课 + 2 个补充板块的详细教案（知识点清单、图解要点、验收题及答案，含第 19、20 课）
+- `references/curriculum.md` — 19 节核心课 + 3 个补充板块的详细教案（知识点清单、图解要点、验收题及答案，含第 19、20、21 课）
 - `references/kb/` — L3 领域知识库（INDEX / manifest.json / glossary / product_facts / cases），生成课程前检索调用
 - `assets/mini-task-agent.html` — 第 8 课 MiniTask Agent 实战文件
 - `assets/geo-workbench.html` — 第 20 课 GEO 诊断工作台演示素材
